@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.static('public', { maxAge: '1d' }));
 app.use(session({
   secret: 'stocksense-secret-key-2024',
   resave: false,
@@ -481,4 +481,5 @@ app.listen(PORT, () => {
   console.log(`   Admin:   ADMIN001 / admin123`);
   console.log(`   Manager: MGR001 / manager123`);
   console.log(`   Staff:   STAFF001 / staff123\n`);
+
 });
