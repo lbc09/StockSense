@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - StockSense</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-box">
+      <div class="logo">
+        <div class="logo-icon">
+          <img src="logo.png" alt="StockSense AI-Powered Inventory Logo" style="width: 100%; height: 100%; object-fit: contain;">
+        </div>
+        <h1>StockSense</h1>
+        <p>Smart Inventory Management</p>
+      </div>
+
+      <div id="alert" class="alert alert-danger hidden">
+        <span id="alert-message"></span>
+      </div>
+
+      <form id="login-form">
+        <div class="input-group">
+          <label for="id_number">ID Number</label>
+          <input type="text" id="id_number" placeholder="Enter your ID" required>
+        </div>
+
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter your password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Login</button>
+      </form>
+
+      <div style="margin-top: 20px; padding: 16px; background: #f8f9fa; border-radius: 8px; font-size: 12px;">
+        <p style="margin-bottom: 8px; font-weight: 600;">Demo Accounts:</p>
+        <p><strong>Admin:</strong> ADMIN001 / admin123</p>
+        <p><strong>Manager:</strong> MGR001 / manager123</p>
+        <p><strong>Staff:</strong> STAFF001 / staff123</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const id_number = document.getElementById('id_number').value;
+      const password = document.getElementById('password').value;
+      const alert = document.getElementById('alert');
+      const alertMessage = document.getElementById('alert-message');
+      
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id_number, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Redirect based on role
+          switch(data.user.role) {
+            case 'Staff':
+            case 'Manager':
+              window.location.href = 'home.html';
+              break;
+            case 'Admin':
+              window.location.href = 'admin-home.html';
+              break;
+            default:
+              window.location.href = 'home.html';
+          }
+        } else {
+          alert.classList.remove('hidden');
+          alertMessage.textContent = data.error || 'Login failed';
+        }
+      } catch (error) {
+        alert.classList.remove('hidden');
+        alertMessage.textContent = 'Connection error. Please try again.';
+      }
+    });
+  </script>
+</body>
+</html>
