@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -239,4 +240,247 @@
     checkAuth();
   </script>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home - StockSense</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Home</h1>
+      <span id="user-name"></span>
+    </div>
+
+    <div class="content" style="padding-bottom: 80px;">
+      <div class="alert alert-warning" id="low-stock-alert" style="display: none;">
+        <strong>⚠️ <span id="alert-count">0</span> items running low on stock!</strong>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="today-sales">0</div>
+          <div class="stat-label">Today's Sales</div>
+        </div>
+
+        <div class="stat-card secondary">
+          <div class="stat-value" id="today-revenue">₱0</div>
+          <div class="stat-label">Today's Revenue</div>
+        </div>
+
+        <div class="stat-card success">
+          <div class="stat-value" id="inventory-count">0</div>
+          <div class="stat-label">Inventory Items</div>
+        </div>
+
+        <div class="stat-card warning">
+          <div class="stat-value" id="low-stock-count">0</div>
+          <div class="stat-label">Low Stock Items</div>
+        </div>
+      </div>
+
+      <div class="card" id="at-risk-card">
+        <div class="card-header">
+          <h3 class="card-title">📊 At-Risk Sellers</h3>
+          <span class="badge badge-danger">Urgent</span>
+        </div>
+        <div id="at-risk-items">
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>Loading data...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">📈 Today's Sales</h3>
+          <span id="sales-count-badge">0 sold</span>
+        </div>
+        <div id="recent-sales">
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>Loading sales...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav" id="bottom-nav">
+      </div>
+  </div>
+
+  <script>
+    let userRole = '';
+
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/user');
+        if (!response.ok) {
+          window.location.href = 'index.html';
+          return;
+        }
+        const user = await response.json();
+        userRole = user.role;
+        
+        // Admin should not access this page
+        if (userRole === 'Admin') {
+          window.location.href = 'admin-home.html';
+          return;
+        }
+        
+        document.getElementById('user-name').textContent = user.full_name;
+        setupNavigation();
+        loadHomeData();
+      } catch (error) {
+        window.location.href = 'index.html';
+      }
+    }
+
+    function setupNavigation() {
+      const nav = document.getElementById('bottom-nav');
+      
+      if (userRole === 'Staff') {
+        nav.innerHTML = `
+          <button class="nav-item active" onclick="location.href='home.html'">
+            <span class="icon">🏠</span>
+            <span class="label">Home</span>
+          </button>
+          <button class="nav-item" onclick="location.href='sales.html'">
+            <span class="icon">🛒</span>
+            <span class="label">Sales</span>
+          </button>
+          <button class="nav-item" onclick="logout()">
+            <span class="icon">🚪</span>
+            <span class="label">Logout</span>
+          </button>
+        `;
+        // Hide at-risk card for staff
+        document.getElementById('at-risk-card').style.display = 'none';
+      } else if (userRole === 'Manager') {
+        nav.innerHTML = `
+          <button class="nav-item active" onclick="location.href='home.html'">
+            <span class="icon">🏠</span>
+            <span class="label">Home</span>
+          </button>
+          <button class="nav-item" onclick="location.href='stocks.html'">
+            <span class="icon">📦</span>
+            <span class="label">Stocks</span>
+          </button>
+          <button class="nav-item" onclick="location.href='sales.html'">
+            <span class="icon">🛒</span>
+            <span class="label">Sales</span>
+          </button>
+          <button class="nav-item" onclick="location.href='analytics.html'">
+            <span class="icon">📊</span>
+            <span class="label">Analytics</span>
+          </button>
+          <button class="nav-item" onclick="logout()">
+            <span class="icon">🚪</span>
+            <span class="label">Logout</span>
+          </button>
+        `;
+      }
+    }
+
+    async function loadHomeData() {
+      try {
+        // Load home stats
+        const statsResponse = await fetch('/api/analytics/home');
+        const stats = await statsResponse.json();
+
+        document.getElementById('today-sales').textContent = stats.todaySales;
+        document.getElementById('today-revenue').textContent = `₱${stats.todayRevenue.toFixed(2)}`;
+        document.getElementById('inventory-count').textContent = stats.inventoryCount;
+        document.getElementById('low-stock-count').textContent = stats.lowStockItems;
+
+        // Show alert if there are low stock items
+        if (stats.lowStockItems > 0) {
+          document.getElementById('alert-count').textContent = stats.lowStockItems;
+          document.getElementById('low-stock-alert').style.display = 'flex';
+        }
+
+        // Load low stock items (for managers only)
+        if (userRole === 'Manager') {
+          const lowStockResponse = await fetch('/api/products/alerts/low-stock');
+          const lowStockItems = await lowStockResponse.json();
+
+          const atRiskContainer = document.getElementById('at-risk-items');
+          if (lowStockItems.length === 0) {
+            atRiskContainer.innerHTML = `
+              <div class="empty-state">
+                <p style="padding: 20px;">All items are well stocked! ✅</p>
+              </div>
+            `;
+          } else {
+            atRiskContainer.innerHTML = lowStockItems.slice(0, 5).map(item => `
+              <div class="product-item">
+                <div class="product-info">
+                  <h4>${item.name}</h4>
+                  <p>${item.sku} • Current: ${item.quantity} | Need: ${item.reorder_point}</p>
+                </div>
+                <span class="badge badge-danger">Low Stock</span>
+              </div>
+            `).join('');
+          }
+        }
+
+        // Load recent sales
+        const salesResponse = await fetch('/api/sales');
+        const sales = await salesResponse.json();
+
+        const recentSalesContainer = document.getElementById('recent-sales');
+        const todaySales = sales.filter(sale => {
+          const saleDate = new Date(sale.sale_date).toDateString();
+          const today = new Date().toDateString();
+          return saleDate === today;
+        });
+
+        document.getElementById('sales-count-badge').textContent = `${todaySales.length} sold`;
+
+        if (todaySales.length === 0) {
+          recentSalesContainer.innerHTML = `
+            <div class="empty-state">
+              <p style="padding: 20px;">No sales recorded today</p>
+            </div>
+          `;
+        } else {
+          recentSalesContainer.innerHTML = todaySales.slice(0, 5).map(sale => {
+            const time = new Date(sale.sale_date).toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            });
+            return `
+              <div class="product-item">
+                <div class="product-info">
+                  <h4>${sale.product_name}</h4>
+                  <p>${time} • Qty: ${sale.quantity} • ${sale.user_name}</p>
+                </div>
+                <div class="product-price">₱${sale.total_price.toFixed(2)}</div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (error) {
+        console.error('Error loading home data:', error);
+      }
+    }
+
+    async function logout() {
+      try {
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = 'index.html';
+      } catch (error) {
+        window.location.href = 'index.html';
+      }
+    }
+
+    checkAuth();
+  </script>
+</body>
+>>>>>>> cab33cbbddb32d17848fc5c76e72873848c9c01c
 </html>

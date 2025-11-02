@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -404,4 +405,412 @@
     loadSalesHistory(); 
   </script>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales - StockSense</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Sales Entry</h1>
+      <span id="user-name"></span>
+    </div>
+
+    <div class="content" style="padding-bottom: 80px;">
+      <div id="alert" class="alert alert-success hidden">
+        <span id="alert-message"></span>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Add Item to Cart</h3>
+        </div>
+
+        <div class="search-box">
+          <input type="text" id="product-search" placeholder="Search by name or SKU">
+        </div>
+
+        <div class="product-list" id="product-list">
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>Loading products...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="cart-card" style="display: none;">
+        <div class="card-header">
+          <h3 class="card-title">🛒 Cart</h3>
+        </div>
+
+        <div id="cart-items"></div>
+
+        <div class="input-group" style="margin-top: 16px;">
+          <label for="sale-date">Date of Purchase</label>
+          <input type="date" id="sale-date" required>
+        </div>
+
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 2px solid #dee2e6;">
+          <div class="flex-between mb-16">
+            <span style="font-size: 18px; font-weight: 600;">Total:</span>
+            <span id="cart-total" style="font-size: 24px; font-weight: 700; color: #007bff;">₱0.00</span>
+          </div>
+          <button class="btn btn-success btn-block" onclick="completeSale()">Complete Sale</button>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">🧾 Recent Sales History</h3>
+          <span id="total-sales-badge" class="badge badge-primary">0 Transactions</span>
+        </div>
+        <div id="sales-history-list">
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>Loading sales history...</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="bottom-nav" id="bottom-nav">
+      </div>
+  </div>
+
+  <script>
+    let products = [];
+    let cart = [];
+    let userRole = '';
+
+    // Check authentication
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/user');
+        if (!response.ok) {
+          window.location.href = 'index.html';
+          return;
+        }
+        const user = await response.json();
+        userRole = user.role;
+        
+        // Admin should not access this page
+        if (userRole === 'Admin') {
+          window.location.href = 'admin-home.html';
+          return;
+        }
+        
+        document.getElementById('user-name').textContent = user.full_name;
+        setupNavigation();
+      } catch (error) {
+        window.location.href = 'index.html';
+      }
+    }
+
+    function setupNavigation() {
+      const nav = document.getElementById('bottom-nav');
+      
+      if (userRole === 'Staff') {
+        nav.innerHTML = `
+          <button class="nav-item" onclick="location.href='home.html'">
+            <span class="icon">🏠</span>
+            <span class="label">Home</span>
+          </button>
+          <button class="nav-item active" onclick="location.href='sales.html'">
+            <span class="icon">🛒</span>
+            <span class="label">Sales</span>
+          </button>
+          <button class="nav-item" onclick="logout()">
+            <span class="icon">🚪</span>
+            <span class="label">Logout</span>
+          </button>
+        `;
+      } else if (userRole === 'Manager') {
+        nav.innerHTML = `
+          <button class="nav-item" onclick="location.href='home.html'">
+            <span class="icon">🏠</span>
+            <span class="label">Home</span>
+          </button>
+          <button class="nav-item" onclick="location.href='stocks.html'">
+            <span class="icon">📦</span>
+            <span class="label">Stocks</span>
+          </button>
+          <button class="nav-item active" onclick="location.href='sales.html'">
+            <span class="icon">🛒</span>
+            <span class="label">Sales</span>
+          </button>
+          <button class="nav-item" onclick="location.href='analytics.html'">
+            <span class="icon">📊</span>
+            <span class="label">Analytics</span>
+          </button>
+          <button class="nav-item" onclick="logout()">
+            <span class="icon">🚪</span>
+            <span class="label">Logout</span>
+          </button>
+        `;
+      }
+    }
+
+    // Load products
+    async function loadProducts() {
+      try {
+        const response = await fetch('/api/products');
+        products = await response.json();
+        displayProducts(products);
+      } catch (error) {
+        console.error('Error loading products:', error);
+      }
+    }
+
+    // New function: Load Sales History
+    async function loadSalesHistory() {
+      try {
+        const response = await fetch('/api/sales');
+        const sales = await response.json();
+        
+        const salesHistoryContainer = document.getElementById('sales-history-list');
+        document.getElementById('total-sales-badge').textContent = `${sales.length} Transactions`;
+
+        if (sales.length === 0) {
+          salesHistoryContainer.innerHTML = `
+            <div class="empty-state">
+              <p style="padding: 20px;">No sales recorded yet.</p>
+            </div>
+          `;
+        } else {
+          salesHistoryContainer.innerHTML = sales.slice(0, 8).map(sale => {
+            const date = new Date(sale.sale_date);
+            const time = date.toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            });
+            const dateString = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+            return `
+              <div class="product-item">
+                <div class="product-info">
+                  <h4>${sale.product_name} (${sale.sku})</h4>
+                  <p>${dateString} @ ${time} • Qty: ${sale.quantity} • Sold by: ${sale.user_name}</p>
+                </div>
+                <div class="product-price">₱${sale.total_price.toFixed(2)}</div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (error) {
+        console.error('Error loading sales history:', error);
+      }
+    }
+
+
+    // Display products
+    function displayProducts(productList) {
+      const container = document.getElementById('product-list');
+      
+      if (productList.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📦</div>
+            <p>No products found</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = productList.map(product => `
+        <div class="product-item" onclick="addToCart(${product.id})">
+          <div class="product-info">
+            <h4>${product.name}</h4>
+            <p>${product.sku} • ${product.category} • ${product.quantity} in stock</p>
+          </div>
+          <div class="product-price">₱${product.price.toFixed(2)}</div>
+        </div>
+      `).join('');
+    }
+
+    // Search products
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('product-search').addEventListener('input', (e) => {
+        const search = e.target.value.toLowerCase();
+        const filtered = products.filter(p => 
+          p.name.toLowerCase().includes(search) || 
+          p.sku.toLowerCase().includes(search)
+        );
+        displayProducts(filtered);
+      });
+      
+      // Set default sale date to today
+      const saleDateInput = document.getElementById('sale-date');
+      const today = new Date().toISOString().split('T')[0];
+      saleDateInput.value = today;
+    });
+
+    // Add to cart
+    function addToCart(productId) {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+
+      if (product.quantity === 0) {
+        showAlert('This item is out of stock', 'danger');
+        return;
+      }
+
+      const existingItem = cart.find(item => item.id === productId);
+      
+      if (existingItem) {
+        if (existingItem.quantity < product.quantity) {
+          existingItem.quantity++;
+        } else {
+          showAlert('Not enough stock available', 'danger');
+          return;
+        }
+      } else {
+        cart.push({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: 1,
+          maxQuantity: product.quantity
+        });
+      }
+
+      updateCart();
+      showAlert(`${product.name} added to cart`, 'success');
+    }
+
+    // Update cart display
+    function updateCart() {
+      const cartCard = document.getElementById('cart-card');
+      const cartItems = document.getElementById('cart-items');
+      const cartTotal = document.getElementById('cart-total');
+
+      if (cart.length === 0) {
+        cartCard.style.display = 'none';
+        return;
+      }
+
+      cartCard.style.display = 'block';
+
+      cartItems.innerHTML = cart.map((item, index) => `
+        <div class="cart-item">
+          <div class="cart-item-info">
+            <h4>${item.name}</h4>
+            <p>₱${item.price.toFixed(2)} each</p>
+          </div>
+          <div class="cart-item-quantity">
+            <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">-</button>
+            <span class="quantity-value">${item.quantity}</span>
+            <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
+            <button class="btn-small btn-danger" onclick="removeFromCart(${index})">Remove</button>
+          </div>
+        </div>
+      `).join('');
+
+      const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      cartTotal.textContent = `₱${total.toFixed(2)}`;
+    }
+
+    // Update quantity
+    function updateQuantity(index, change) {
+      const item = cart[index];
+      const newQuantity = item.quantity + change;
+
+      if (newQuantity <= 0) {
+        removeFromCart(index);
+        return;
+      }
+
+      if (newQuantity > item.maxQuantity) {
+        showAlert('Not enough stock available', 'danger');
+        return;
+      }
+
+      item.quantity = newQuantity;
+      updateCart();
+    }
+
+    // Remove from cart
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      updateCart();
+      showAlert('Item removed from cart', 'success');
+    }
+
+    // Complete sale
+    async function completeSale() {
+      if (cart.length === 0) return;
+
+      // Validate date
+      const saleDate = document.getElementById('sale-date').value;
+      if (!saleDate) {
+        showAlert('Please select a Date of Purchase', 'danger');
+        return;
+      }
+
+      try {
+        const items = cart.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          price: item.price
+        }));
+
+        const response = await fetch('/api/sales', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            items,
+            sale_date: saleDate // Send the custom date
+          })
+        });
+
+        if (response.ok) {
+          showAlert('Sale completed successfully! 🎉', 'success');
+          cart = [];
+          updateCart();
+          loadProducts(); // Refresh product quantities
+          loadSalesHistory(); // Refresh sales history
+        } else {
+          showAlert('Failed to complete sale', 'danger');
+        }
+      } catch (error) {
+        showAlert('Connection error. Please try again.', 'danger');
+      }
+    }
+
+    // Show alert
+    function showAlert(message, type = 'success') {
+      const alert = document.getElementById('alert');
+      const alertMessage = document.getElementById('alert-message');
+      
+      alert.className = `alert alert-${type}`;
+      alertMessage.textContent = message;
+      alert.classList.remove('hidden');
+
+      setTimeout(() => {
+        alert.classList.add('hidden');
+      }, 3000);
+    }
+
+    // Logout
+    async function logout() {
+      try {
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = 'index.html';
+      } catch (error) {
+        window.location.href = 'index.html';
+      }
+    }
+
+    // Initialize
+    checkAuth();
+    loadProducts();
+    loadSalesHistory(); 
+  </script>
+</body>
+>>>>>>> cab33cbbddb32d17848fc5c76e72873848c9c01c
 </html>

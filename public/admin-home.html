@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -496,4 +497,504 @@
     checkAuth();
   </script>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - StockSense</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 id="page-title">Home</h1>
+      <span id="user-name"></span>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tab-home" onclick="switchTab('home')">Home</button>
+      <button class="nav-tab" id="tab-users" onclick="switchTab('users')">Users</button>
+    </div>
+
+    <div class="content" style="padding-bottom: 80px;">
+      <div id="alert" class="alert alert-success hidden">
+        <span id="alert-message"></span>
+      </div>
+
+      <div id="home-tab">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="total-users">0</div>
+            <div class="stat-label">Total Users</div>
+          </div>
+
+          <div class="stat-card secondary">
+            <div class="stat-value" id="admin-count">0</div>
+            <div class="stat-label">Admins</div>
+          </div>
+
+          <div class="stat-card success">
+            <div class="stat-value" id="manager-count">0</div>
+            <div class="stat-label">Managers</div>
+          </div>
+
+          <div class="stat-card warning">
+            <div class="stat-value" id="staff-count">0</div>
+            <div class="stat-label">Staff</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">🔐 Role Permissions</h3>
+          </div>
+          <div style="font-size: 13px; line-height: 1.8;">
+            <div style="padding: 12px; margin-bottom: 8px; background: #f8f9fa; border-radius: 8px;">
+              <p style="font-weight: 600; margin-bottom: 8px; color: #dc3545;">👑 Admin</p>
+              <p>• Full system access</p>
+              <p>• User management (create, edit, delete users)</p>
+              <p>• Cannot access Home, Sales, Stocks, or Analytics pages</p>
+            </div>
+            
+            <div style="padding: 12px; margin-bottom: 8px; background: #f8f9fa; border-radius: 8px;">
+              <p style="font-weight: 600; margin-bottom: 8px; color: #667eea;">👨‍💼 Manager</p>
+              <p>• Home page with sales overview</p>
+              <p>• Sales entry and history</p>
+              <p>• Stocks management (inventory, alerts, restock recommendations)</p>
+              <p>• Analytics and AI predictions</p>
+            </div>
+            
+            <div style="padding: 12px; background: #f8f9fa; border-radius: 8px;">
+              <p style="font-weight: 600; margin-bottom: 8px; color: #28a745;">👤 Staff</p>
+              <p>• Home page (basic sales overview)</p>
+              <p>• Sales entry only</p>
+              <p>• Cannot access Stocks or Analytics</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">📊 System Overview</h3>
+          </div>
+          <div id="system-overview">
+            <div class="loading">
+              <div class="spinner"></div>
+              <p>Loading system data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="users-tab" class="hidden">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">👥 User Management</h3>
+            <button class="btn btn-primary btn-small" onclick="showAddUserModal()">+ Add User</button>
+          </div>
+
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ID Number</th>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-table">
+                <tr>
+                  <td colspan="4">
+                    <div class="loading">
+                      <div class="spinner"></div>
+                      <p>Loading users...</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="user-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modal-title">Add User</h3>
+          <button class="modal-close" onclick="closeUserModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <form id="user-form">
+            <input type="hidden" id="user-id">
+            
+            <div class="input-group">
+              <label for="user-id-number">ID Number</label>
+              <input type="text" id="user-id-number" required placeholder="e.g., STAFF002">
+            </div>
+
+            <div class="input-group">
+              <label for="user-fullname">Full Name</label>
+              <input type="text" id="user-fullname" required placeholder="e.g., Juan Dela Cruz">
+            </div>
+
+            <div class="input-group">
+              <label for="user-role">Role</label>
+              <select id="user-role" required>
+                <option value="Staff">Staff</option>
+                <option value="Manager">Manager</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+
+            <div class="input-group" id="password-group">
+              <label for="user-password">Password</label>
+              <input type="password" id="user-password" placeholder="Enter new password">
+              <small style="color: #6c757d; font-size: 12px;">Leave blank to keep current password (for editing)</small>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeUserModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveUser()">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="role-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Edit User Role</h3>
+          <button class="modal-close" onclick="closeRoleModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="edit-user-id">
+          <p style="margin-bottom: 16px;">
+            <strong id="edit-user-name"></strong>
+          </p>
+          <div class="input-group">
+            <label for="edit-user-role">Select New Role</label>
+            <select id="edit-user-role">
+              <option value="Staff">Staff</option>
+              <option value="Manager">Manager</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeRoleModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="updateUserRole()">Update Role</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-item active" onclick="switchTab('home')">
+        <span class="icon">🏠</span>
+        <span class="label">Home</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('users')">
+        <span class="icon">👥</span>
+        <span class="label">Users</span>
+      </button>
+      <button class="nav-item" onclick="logout()">
+        <span class="icon">🚪</span>
+        <span class="label">Logout</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let users = [];
+    let currentTab = 'home';
+
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/user');
+        if (!response.ok) {
+          window.location.href = 'index.html';
+          return;
+        }
+        const user = await response.json();
+        if (user.role !== 'Admin') {
+          window.location.href = 'index.html';
+          return;
+        }
+        document.getElementById('user-name').textContent = user.full_name;
+        loadUsers();
+        loadSystemOverview();
+      } catch (error) {
+        window.location.href = 'index.html';
+      }
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      
+      // Update tab buttons
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.add('active');
+
+      // Update nav buttons
+      document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
+      if (tab === 'home') {
+        document.querySelectorAll('.bottom-nav .nav-item')[0].classList.add('active');
+      } else if (tab === 'users') {
+        document.querySelectorAll('.bottom-nav .nav-item')[1].classList.add('active');
+      }
+
+      // Update content
+      document.getElementById('home-tab').classList.toggle('hidden', tab !== 'home');
+      document.getElementById('users-tab').classList.toggle('hidden', tab !== 'users');
+
+      // Update page title
+      document.getElementById('page-title').textContent = tab === 'home' ? 'Home' : 'Users';
+
+      // Load data if needed
+      if (tab === 'users') {
+        loadUsers();
+      }
+    }
+
+    async function loadSystemOverview() {
+      try {
+        const [productsRes, salesRes] = await Promise.all([
+          fetch('/api/products'),
+          fetch('/api/sales')
+        ]);
+
+        const products = await productsRes.json();
+        const sales = await salesRes.json();
+
+        const today = new Date().toDateString();
+        const todaySales = sales.filter(sale => {
+          const saleDate = new Date(sale.sale_date).toDateString();
+          return saleDate === today;
+        });
+
+        const todayRevenue = todaySales.reduce((sum, sale) => sum + sale.total_price, 0);
+        const lowStockCount = products.filter(p => p.quantity < p.reorder_point).length;
+
+        const container = document.getElementById('system-overview');
+        container.innerHTML = `
+          <div style="padding: 12px; display: grid; gap: 12px;">
+            <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+              <span>Total Products:</span>
+              <strong>${products.length}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+              <span>Today's Sales:</span>
+              <strong>${todaySales.length}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+              <span>Today's Revenue:</span>
+              <strong>₱${todayRevenue.toFixed(2)}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 12px; background: ${lowStockCount > 0 ? '#fff3cd' : '#f8f9fa'}; border-radius: 8px;">
+              <span>Low Stock Items:</span>
+              <strong style="color: ${lowStockCount > 0 ? '#856404' : 'inherit'}">${lowStockCount}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+              <span>Total Sales (All Time):</span>
+              <strong>${sales.length}</strong>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        console.error('Error loading system overview:', error);
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const response = await fetch('/api/users');
+        users = await response.json();
+        
+        // Update stats
+        document.getElementById('total-users').textContent = users.length;
+        document.getElementById('admin-count').textContent = users.filter(u => u.role === 'Admin').length;
+        document.getElementById('manager-count').textContent = users.filter(u => u.role === 'Manager').length;
+        document.getElementById('staff-count').textContent = users.filter(u => u.role === 'Staff').length;
+
+        // Display users table
+        const tbody = document.getElementById('users-table');
+        tbody.innerHTML = users.map(user => {
+          let roleBadge = '';
+          if (user.role === 'Admin') {
+            roleBadge = '<span class="badge badge-danger">Admin</span>';
+          } else if (user.role === 'Manager') {
+            roleBadge = '<span class="badge badge-primary">Manager</span>';
+          } else {
+            roleBadge = '<span class="badge badge-success">Staff</span>';
+          }
+
+          const isDefaultAdmin = user.id_number === 'ADMIN001';
+
+          return `
+            <tr>
+              <td>${user.id_number}</td>
+              <td>${user.full_name}</td>
+              <td>${roleBadge}</td>
+              <td>
+                <button class="btn-small btn-primary" onclick="showEditRoleModal(${user.id}, '${user.full_name}', '${user.role}')">
+                  Edit Role
+                </button>
+                ${!isDefaultAdmin ? `
+                  <button class="btn-small btn-danger" onclick="deleteUser(${user.id}, '${user.full_name}')">
+                    Delete
+                  </button>
+                ` : '<small style="color: #6c757d;">Protected</small>'}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (error) {
+        console.error('Error loading users:', error);
+      }
+    }
+
+    function showAddUserModal() {
+      document.getElementById('modal-title').textContent = 'Add User';
+      document.getElementById('user-form').reset();
+      document.getElementById('user-id').value = '';
+      document.getElementById('user-password').required = true;
+      document.getElementById('user-modal').classList.add('active');
+    }
+
+    function closeUserModal() {
+      document.getElementById('user-modal').classList.remove('active');
+    }
+
+    async function saveUser() {
+      const userId = document.getElementById('user-id').value;
+      const idNumber = document.getElementById('user-id-number').value;
+      const fullName = document.getElementById('user-fullname').value;
+      const role = document.getElementById('user-role').value;
+      const password = document.getElementById('user-password').value;
+
+      if (!idNumber || !fullName || !role) {
+        showAlert('Please fill in all required fields', 'danger');
+        return;
+      }
+
+      if (!userId && !password) {
+        showAlert('Password is required for new users', 'danger');
+        return;
+      }
+
+      try {
+        const data = {
+          id_number: idNumber,
+          full_name: fullName,
+          role: role
+        };
+
+        if (password) {
+          data.password = password;
+        }
+
+        const response = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          showAlert('User added successfully', 'success');
+          closeUserModal();
+          loadUsers();
+        } else {
+          const error = await response.json();
+          showAlert(error.error || 'Failed to save user', 'danger');
+        }
+      } catch (error) {
+        showAlert('Connection error', 'danger');
+      }
+    }
+
+    function showEditRoleModal(id, name, currentRole) {
+      document.getElementById('edit-user-id').value = id;
+      document.getElementById('edit-user-name').textContent = name;
+      document.getElementById('edit-user-role').value = currentRole;
+      document.getElementById('role-modal').classList.add('active');
+    }
+
+    function closeRoleModal() {
+      document.getElementById('role-modal').classList.remove('active');
+    }
+
+    async function updateUserRole() {
+      const userId = document.getElementById('edit-user-id').value;
+      const newRole = document.getElementById('edit-user-role').value;
+
+      try {
+        const response = await fetch(`/api/users/${userId}/role`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: newRole })
+        });
+
+        if (response.ok) {
+          showAlert('User role updated successfully', 'success');
+          closeRoleModal();
+          loadUsers();
+        } else {
+          showAlert('Failed to update role', 'danger');
+        }
+      } catch (error) {
+        showAlert('Connection error', 'danger');
+      }
+    }
+
+    async function deleteUser(id, name) {
+      if (!confirm(`Are you sure you want to delete user "${name}"?`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/users/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          showAlert('User deleted successfully', 'success');
+          loadUsers();
+        } else {
+          const error = await response.json();
+          showAlert(error.error || 'Cannot delete default admin', 'danger');
+        }
+      } catch (error) {
+        showAlert('Connection error', 'danger');
+      }
+    }
+
+    function showAlert(message, type = 'success') {
+      const alert = document.getElementById('alert');
+      const alertMessage = document.getElementById('alert-message');
+      
+      alert.className = `alert alert-${type}`;
+      alertMessage.textContent = message;
+      alert.classList.remove('hidden');
+
+      setTimeout(() => {
+        alert.classList.add('hidden');
+      }, 3000);
+    }
+
+    async function logout() {
+      try {
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = 'index.html';
+      } catch (error) {
+        window.location.href = 'index.html';
+      }
+    }
+
+    checkAuth();
+  </script>
+</body>
+>>>>>>> cab33cbbddb32d17848fc5c76e72873848c9c01c
 </html>
