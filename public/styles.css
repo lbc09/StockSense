@@ -40,7 +40,7 @@ body {
   background: white; /* Contrasting background */
   color: #007bff; /* Primary text color */
   border: 1px solid #007bff; /* Clear border */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Lift it visually */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
   transform: none; 
 }
 

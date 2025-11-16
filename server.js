@@ -239,9 +239,9 @@ app.get('/api/products/alerts/out-of-stock', requireAuth, requireRole('Manager')
   });
 });
 
-// Record sale
+// Record sale (Updated to handle sale_date)
 app.post('/api/sales', requireAuth, (req, res) => {
-  const { items, sale_date } = req.body; // items: [{ product_id, quantity, price }]
+  const { items, sale_date } = req.body; // items: [{ product_id, quantity, price, sale_date }]
   const userId = req.session.user.id;
   
   // Use provided sale_date, otherwise default to current system time
